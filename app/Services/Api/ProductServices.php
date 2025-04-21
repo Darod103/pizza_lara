@@ -4,14 +4,15 @@ namespace App\Services\Api;
 
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 class ProductServices
 {
-    public static function getAll(): array
+    public static function getAll(): ResourceCollection
     {
-        return ProductResource::collection(Product::all())->resolve();
+        return ProductResource::collection(Product::paginate(20));
     }
 
     public static function showProduct(Product $product): array

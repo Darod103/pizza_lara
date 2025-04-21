@@ -27,8 +27,7 @@ class ProductController extends Controller
     public function store(ProductStoreRequest $request)
     {
         $product = $request->validated();
-        $product = ProductServices::storeProduct($product);
-        return ProductServices::showProduct($product);
+        return ProductServices::storeProduct($product);
     }
 
     /**
@@ -45,8 +44,7 @@ class ProductController extends Controller
     public function update(ProductUpdateRequest $request, Product $product)
     {
         $updatedProduct = $request->validated();
-        $product = ProductServices::updateProduct($product, $updatedProduct);
-        return ProductServices::showProduct($product);
+        return ProductServices::updateProduct($product, $updatedProduct);
     }
 
     /**
