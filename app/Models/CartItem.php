@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Product;
 
 /**
  * Модель элемента корзины
@@ -35,10 +36,14 @@ class CartItem extends Model
     }
 
     /**
-     * Получить товар
+     * Получить связанный товар
      *
      * @return BelongsTo
      */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
 
     /**
      * Вычислить стоимость элемента корзины

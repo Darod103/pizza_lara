@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 /**
  * Контроллер для управления корзиной товаров
- * 
+ *
  * @package App\Http\Controllers\Api
  */
 class CartController extends Controller
@@ -18,7 +18,7 @@ class CartController extends Controller
 
     /**
      * Конструктор контроллера
-     * 
+     *
      * @param CartService $cartService Сервис для работы с корзиной
      */
     public function __construct(CartService $cartService)
@@ -28,7 +28,7 @@ class CartController extends Controller
 
     /**
      * Получить корзину текущего пользователя
-     * 
+     *
      * @return JsonResponse Корзина с товарами и общей стоимостью
      */
     public function index(): JsonResponse
@@ -38,12 +38,12 @@ class CartController extends Controller
     }
 
     /**
-     * Добавить товар в корзину
-     * 
+     * Сохранить (добавить) новый товар в корзину
+     *
      * @param Request $request Запрос с данными товара (product_id, quantity)
      * @return JsonResponse Добавленный элемент корзины
      */
-    public function addItem(Request $request): JsonResponse
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
@@ -55,18 +55,17 @@ class CartController extends Controller
             $request->product_id,
             $request->quantity
         );
-
         return response()->json($cartItem, 201);
     }
 
     /**
      * Обновить количество товара в корзине
-     * 
+     *
      * @param Request $request Запрос с новым количеством
      * @param int $itemId ID элемента корзины
      * @return JsonResponse Обновленный элемент корзины
      */
-    public function updateItem(Request $request, int $itemId): JsonResponse
+    public function update(Request $request, int $itemId): JsonResponse
     {
         $request->validate([
             'quantity' => 'required|integer|min:1'
@@ -83,11 +82,11 @@ class CartController extends Controller
 
     /**
      * Удалить товар из корзины
-     * 
+     *
      * @param int $itemId ID элемента корзины
      * @return JsonResponse Сообщение об успешном удалении
      */
-    public function removeItem(int $itemId): JsonResponse
+    public function destroy(int $itemId): JsonResponse
     {
         $this->cartService->removeItem($itemId, auth()->id());
         return response()->json(['message' => 'Item removed from cart']);
@@ -95,10 +94,10 @@ class CartController extends Controller
 
     /**
      * Очистить корзину пользователя
-     * 
+     *
      * @return JsonResponse Сообщение об успешной очистке
      */
-    public function clear(): JsonResponse
+    public function destroyAll(): JsonResponse
     {
         $this->cartService->clearCart(auth()->id());
         return response()->json(['message' => 'Cart cleared']);

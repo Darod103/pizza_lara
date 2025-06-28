@@ -16,8 +16,8 @@ class RegistrationTest extends TestCase
      */
     public function test_registration_success(): void
     {
+        //TODO Сделать тест ... Надо подумать как сделать проверку на зарегистрированного пользователя
         $user = User::factory()->make();
-        dd($user->toArray());
         $response = $this->post('api/register', [
             'name' => 'Test User',
             'email' => 'test@test.ru',

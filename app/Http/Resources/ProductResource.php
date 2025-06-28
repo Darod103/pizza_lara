@@ -21,8 +21,7 @@ class ProductResource extends JsonResource
             'price' => $this->price,
             'category' => $this->category,
             'is_available' => $this->is_available,
-            'image' => $this->image,
-            'image_url' => $this->image ? asset('storage/' . $this->image) : null,
+            'image' => $this->images,
         ];
     }
 }
