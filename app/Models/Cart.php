@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Модель корзины покупок
- * 
+ *
  * @package App\Models
  * @property int $id ID корзины
  * @property int $user_id ID пользователя
@@ -20,11 +20,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Cart extends Model
 {
-    protected $fillable = ['user_id'];
+    protected $guarded = false;
 
     /**
      * Получить пользователя, которому принадлежит корзина
-     * 
+     *
      * @return BelongsTo
      */
     public function user(): BelongsTo
@@ -34,7 +34,7 @@ class Cart extends Model
 
     /**
      * Получить все элементы корзины
-     * 
+     *
      * @return HasMany
      */
     public function cartItems(): HasMany
@@ -44,7 +44,7 @@ class Cart extends Model
 
     /**
      * Вычислить общую стоимость корзины
-     * 
+     *
      * @return float Общая стоимость всех товаров в корзине
      */
     public function getTotalAttribute(): float

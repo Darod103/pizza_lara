@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Модель элемента корзины
- * 
+ *
  * @package App\Models
  * @property int $id ID элемента корзины
  * @property int $cart_id ID корзины
@@ -22,11 +22,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class CartItem extends Model
 {
-    protected $fillable = ['cart_id', 'product_id', 'quantity', 'price'];
+    protected $guarded = false;
 
     /**
      * Получить корзину, к которой принадлежит элемент
-     * 
+     *
      * @return BelongsTo
      */
     public function cart(): BelongsTo
@@ -36,17 +36,13 @@ class CartItem extends Model
 
     /**
      * Получить товар
-     * 
+     *
      * @return BelongsTo
      */
-    public function product(): BelongsTo
-    {
-        return $this->belongsTo(Product::class);
-    }
 
     /**
      * Вычислить стоимость элемента корзины
-     * 
+     *
      * @return float Общая стоимость (цена × количество)
      */
     public function getSubtotalAttribute(): float
