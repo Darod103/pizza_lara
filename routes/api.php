@@ -17,13 +17,14 @@ Route::group([
     Route::apiResource('',ProductController::class)->except(['index', 'show']);
 });
 
-Route::group(['middleware' => 'auth:api', 'prefix' => 'cart',], function () {
-    Route::apiResource('',CartController::class);
-//    Route::get('/', [CartController::class, 'index']);
-//    Route::post('/items', [CartController::class, 'addItem']);
-//    Route::put('/items/{itemId}', [CartController::class, 'updateItem']);
-//    Route::delete('/items/{itemId}', [CartController::class, 'removeItem']);
-//    Route::delete('/clear', [CartController::class, 'clear']);
+Route::group(['middleware' => 'auth:api','prefix'=>'cart'], function () {
+    Route::apiResource('/',CartController::class)->except(['update', 'destroy']);
+    //TODO узнать правильно ли так делать....
+    Route::put('item/{item}',[CartController::class,'update']);
+    Route::patch('item/{item}',[CartController::class,'update']);
+    Route::delete('item/{cartItem}', [CartController::class, 'destroy']);
+    Route::delete('/{cart}', [CartController::class, 'destroyAll']);
+
 });
 
 require __DIR__ . '/auth.php';

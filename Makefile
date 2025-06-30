@@ -12,7 +12,7 @@ logs:
 
 # Запуск всех контейнеров
 up:
-	docker-compose up -d --build
+	docker-compose up -d
 
 # Остановка всех контейнеров
 down:

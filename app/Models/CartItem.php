@@ -52,6 +52,6 @@ class CartItem extends Model
      */
     public function getSubtotalAttribute(): float
     {
-        return $this->price * $this->quantity;
+        return round($this->price * $this->quantity,2);
     }
 }

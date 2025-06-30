@@ -2,10 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Services\Api\CartService;
+
+use App\Services\Api\Interface\CartServiceInterface;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Resources\CartResource;
+use App\Http\Controllers\Controller;
+use App\Exceptions\CartLimitException;
+use App\Http\Resources\CartItemResource;
+use Symfony\Component\HttpFoundation\Response;
+use App\Exceptions\CartItemNotFoundException;
+use App\Http\Requests\Api\Cart\CartStoreRequest;
+use App\Http\Requests\Api\Cart\CartUpdateRequest;
 
 /**
  * Контроллер для управления корзиной товаров
@@ -14,14 +21,14 @@ use Illuminate\Http\Request;
  */
 class CartController extends Controller
 {
-    protected CartService $cartService;
+    protected CartServiceInterface $cartService;
 
     /**
      * Конструктор контроллера
      *
-     * @param CartService $cartService Сервис для работы с корзиной
+     * @param CartServiceInterface $cartService Сервис для работы с корзиной
      */
-    public function __construct(CartService $cartService)
+    public function __construct(CartServiceInterface $cartService)
     {
         $this->cartService = $cartService;
     }
@@ -29,55 +36,45 @@ class CartController extends Controller
     /**
      * Получить корзину текущего пользователя
      *
-     * @return JsonResponse Корзина с товарами и общей стоимостью
+     * @return CartResource Корзина с товарами и общей стоимостью
      */
-    public function index(): JsonResponse
+    public function index(): CartResource
     {
         $cart = $this->cartService->getUserCart(auth()->id());
-        return response()->json($cart);
+        return CartResource::make($cart);
     }
 
     /**
      * Сохранить (добавить) новый товар в корзину
      *
-     * @param Request $request Запрос с данными товара (product_id, quantity)
-     * @return JsonResponse Добавленный элемент корзины
+     * @param CartStoreRequest $request Запрос с данными товара (product_id, quantity)
+     * @return CartResource Добавленный элемент корзины
+     * @throws CartLimitException
      */
-    public function store(Request $request): JsonResponse
+    public function store(CartStoreRequest $request): CartResource
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1'
-        ]);
-
-        $cartItem = $this->cartService->addItem(
-            auth()->id(),
-            $request->product_id,
-            $request->quantity
-        );
-        return response()->json($cartItem, 201);
+        $data = $request->validated();
+        $cartItem = $this->cartService->addItem(auth()->id(), $data['product_id'], $data['quantity']);
+        return CartResource::make($cartItem);
     }
 
     /**
      * Обновить количество товара в корзине
      *
-     * @param Request $request Запрос с новым количеством
+     * @param CartUpdateRequest $request Запрос с новым количеством
      * @param int $itemId ID элемента корзины
-     * @return JsonResponse Обновленный элемент корзины
+     * @return CartItemResource Обновленный элемент корзины
      */
-    public function update(Request $request, int $itemId): JsonResponse
+    public function update(CartUpdateRequest $request, int $itemId): CartItemResource
     {
-        $request->validate([
-            'quantity' => 'required|integer|min:1'
-        ]);
+        $data = $request->validated();
 
         $cartItem = $this->cartService->updateItem(
             $itemId,
-            $request->quantity,
+            $data['quantity'],
             auth()->id()
         );
-
-        return response()->json($cartItem);
+        return CartItemResource::make($cartItem);
     }
 
     /**
@@ -85,11 +82,12 @@ class CartController extends Controller
      *
      * @param int $itemId ID элемента корзины
      * @return JsonResponse Сообщение об успешном удалении
+     * @throws CartItemNotFoundException
      */
     public function destroy(int $itemId): JsonResponse
     {
         $this->cartService->removeItem($itemId, auth()->id());
-        return response()->json(['message' => 'Item removed from cart']);
+        return response()->json(['message' => 'Продукт удален из корзины!'], Response::HTTP_OK);
     }
 
     /**
