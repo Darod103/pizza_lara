@@ -28,7 +28,6 @@ class CartService implements CartServiceInterface
     private array $categoryLimits = [
         'Pizza' => 20,
         'Drink' => 10,
-        'Dessert' => 5,
     ];
 
     /**
