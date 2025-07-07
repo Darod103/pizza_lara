@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Cart;
 
 
-use App\Services\Api\Interface\CartServiceInterface;
-use Illuminate\Http\JsonResponse;
-use App\Http\Resources\CartResource;
-use App\Http\Controllers\Controller;
-use App\Exceptions\CartLimitException;
-use App\Http\Resources\CartItemResource;
-use Symfony\Component\HttpFoundation\Response;
 use App\Exceptions\CartItemNotFoundException;
+use App\Exceptions\CartLimitException;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Cart\CartStoreRequest;
 use App\Http\Requests\Api\Cart\CartUpdateRequest;
+use App\Http\Resources\CartItemResource;
+use App\Http\Resources\CartResource;
+use App\Services\Api\Interface\CartServiceInterface;
+use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Контроллер для управления корзиной товаров
