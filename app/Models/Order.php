@@ -15,9 +15,14 @@ class Order extends Model
         return $this->belongsTo(Cart::class);
     }
 
-    public function orderItems():HasMany
+    public function items():HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function getTotalAttribute(): float
+    {
+        return $this->items->sum('subtotal');
     }
 
 

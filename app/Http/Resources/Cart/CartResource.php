@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Cart;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
-use function Symfony\Component\Translation\t;
 
 class CartResource extends JsonResource
 {

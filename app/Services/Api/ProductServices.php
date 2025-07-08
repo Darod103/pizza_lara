@@ -2,13 +2,13 @@
 
 namespace App\Services\Api;
 
+use App\Http\Resources\Product\ProductResource;
 use App\Models\Product;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Resources\ProductResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
-//TODO Допилить картинки апдейт картинок они сейчас через полиморфные отношения и сделать сидеры для них!!!
+//TODO Допилить картинки : апдейт картинок они сейчас через полиморфные отношения и сделать сидеры для них!!!
 class ProductServices
 {
     public static function getAll(): ResourceCollection
