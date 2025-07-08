@@ -44,11 +44,11 @@ interface CartServiceInterface
     /**
      * Удалить товар из корзины по его ID.
      *
-     * @param int $itemId ID элемента корзины (cart_items.id)
+     * @param int $productId ID элемента корзины (cart_items.id)
      * @param int $userId ID пользователя (для проверки доступа)
      * @return void
      */
-    public function removeItem(int $itemId, int $userId): void;
+    public function removeItem(int $productId, int $userId): void;
 
     /**
      * Очистить корзину пользователя (удалить все товары).
@@ -56,5 +56,5 @@ interface CartServiceInterface
      * @param int $userId ID пользователя
      * @return void
      */
-    public function clearCart(int $userId): void;
+    public function clearCart(int $userId): bool;
 }

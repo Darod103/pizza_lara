@@ -62,17 +62,17 @@ class CartController extends Controller
      * Обновить количество товара в корзине
      *
      * @param CartUpdateRequest $request Запрос с новым количеством
-     * @param int $itemId ID элемента корзины
+     * @param int $productId ID элемента корзины
      * @return CartItemResource Обновленный элемент корзины
      */
-    public function update(CartUpdateRequest $request, int $itemId): CartItemResource
+    public function update(CartUpdateRequest $request, int $productId): CartItemResource
     {
         $data = $request->validated();
 
         $cartItem = $this->cartService->updateItem(
-            $itemId,
+            auth()->id(),
+            $productId,
             $data['quantity'],
-            auth()->id()
         );
         return CartItemResource::make($cartItem);
     }
@@ -98,6 +98,6 @@ class CartController extends Controller
     public function destroyAll(): JsonResponse
     {
         $this->cartService->clearCart(auth()->id());
-        return response()->json(['message' => 'Cart cleared']);
+        return response()->json(['message' => 'Корзина очищена']);
     }
 }

@@ -8,9 +8,22 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Сервис для управления заказами пользователя.
+ */
 class OrderServices
 {
 
+    /**
+     * Создаёт новый заказ из корзины пользователя.
+     *
+     * @param array $data Данные заказа: email, phone, address, delivery_time
+     * @param int $userId ID пользователя
+     * @return Order Созданный заказ
+     *
+     * @throws CartItemNotFoundException Если корзина пуста
+     * @throws \Throwable При ошибке создания заказа
+     */
     public function createOrder(array $data, int $userId): Order
     {
         DB::beginTransaction();
@@ -30,7 +43,6 @@ class OrderServices
             ]);
             foreach ($cart->cartItems as $cartItem) {
                 $order->items()->create([
-                    'order_id' => $order->id,
                     'product_id' => $cartItem->product_id,
                     'quantity' => $cartItem->quantity,
                     'price' => $cartItem->product->price,
@@ -46,18 +58,24 @@ class OrderServices
         }
     }
 
+    /**
+     * Возвращает заказ с подгруженными товарами.
+     *
+     * @param Order $order Заказ
+     * @return Order Заказ с подгруженными items и product
+     */
     public function getOrder(Order $order): Order
     {
        return $order->loadMissing('items.product');
     }
 
-    public function getUserOrders(int $userId)
-    {
-        return Order::whereHas('cart', function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        })->with('items.product')->get();
-    }
 
+    /**
+     * Отменяет заказ (устанавливает статус "cancelled").
+     *
+     * @param Order $order Заказ
+     * @return Order Обновлённый заказ
+     */
     public function cancelOrder(Order $order): Order
     {
         $order->update([
@@ -66,6 +84,13 @@ class OrderServices
         return $order->refresh();
     }
 
+    /**
+     * Обновляет контактную информацию и время доставки в заказе.
+     *
+     * @param Order $order Заказ
+     * @param array $data Новые данные: email, phone, address, delivery_time
+     * @return Order Обновлённый заказ
+     */
     public function updateOrderDetails(Order $order, array $data): Order
     {
         $order->update([
@@ -77,19 +102,20 @@ class OrderServices
         return $order->refresh();
     }
 
-    public function deleteOrder(Order $order): Order
+    /**
+     * Удаляет заказ и связанные товары заказа.
+     *
+     * @param Order $order Заказ
+     * @return bool Успешность удаления (true — успешно)
+     *
+     * @throws \Throwable При ошибке удаления
+     */
+    public function deleteOrder(Order $order): bool
     {
-        DB::beginTransaction();
-        try {
+        return DB::transaction(function () use ($order) {
             $order->items()->delete();
-
-            $order->delete();
-            DB::commit();
-            return $order->refresh();
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
-        }
+            return $order->delete();
+        });
     }
 
 }

@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Services\Api\Order\OrderServices;
 use Illuminate\Http\Request;
 
+
 class OrderAdminController extends Controller
 {
 
@@ -17,10 +18,10 @@ class OrderAdminController extends Controller
         $this->orderServices = $orderServices;
     }
 
-    public function index()
-    {
-        $orders = $this->orderServices
-    }
+//    public function index()
+//    {
+//        $orders = $this->orderServices
+//    }
 
     public function store(Request $request)
     {
@@ -40,7 +41,12 @@ class OrderAdminController extends Controller
      */
     public function destroy(Order $order)
     {
-        dd($order = $this->orderServices->deleteOrder($order));
+        $orderId = $order->id;
+        $this->orderServices->deleteOrder($order);
 
+        return response()->json([
+            'success' => true,
+            'message' => "Заказ с ID {$orderId} удален",
+        ]);
     }
 }

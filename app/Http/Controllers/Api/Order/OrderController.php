@@ -25,9 +25,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $userId = auth()->id();
-        $orders = $this->orderServices->getUserOrders($userId);
-        return OrderResource::collection($orders);
+        return OrderResource::collection(auth()->user()->getUserOrders());
     }
 
     /**

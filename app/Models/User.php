@@ -3,11 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Models\CartItem;
+use App\Exceptions\CartItemNotFoundException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -57,4 +62,16 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->getKey();
     }
+
+    public function orders(): HasManyThrough
+    {
+        return $this->hasManyThrough(Order::class, Cart::class);
+    }
+
+    public function getUserOrders():Collection
+    {
+        return $this->orders()->with('items.product')->get();
+    }
+
+
 }
