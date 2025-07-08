@@ -48,7 +48,7 @@ class OrderServices
 
     public function getOrder(Order $order): Order
     {
-        return $order->loadMissing('items.product');
+       return $order->loadMissing('items.product');
     }
 
     public function getUserOrders(int $userId)
@@ -76,4 +76,20 @@ class OrderServices
         ]);
         return $order->refresh();
     }
+
+    public function deleteOrder(Order $order): Order
+    {
+        DB::beginTransaction();
+        try {
+            $order->items()->delete();
+
+            $order->delete();
+            DB::commit();
+            return $order->refresh();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
 }

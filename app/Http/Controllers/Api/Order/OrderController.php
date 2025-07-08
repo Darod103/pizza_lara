@@ -7,7 +7,9 @@ use App\Http\Requests\Api\Order\StoreOrderReguest;
 use App\Http\Resources\Order\OrderResource;
 use App\Models\Order;
 use App\Services\Api\Order\OrderServices;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use mysql_xdevapi\Exception;
 
 class OrderController extends Controller
 {
@@ -28,7 +30,7 @@ class OrderController extends Controller
         return OrderResource::collection($orders);
     }
 
-     /**
+    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreOrderReguest $request)
@@ -52,7 +54,7 @@ class OrderController extends Controller
     public function update(StoreOrderReguest $request, Order $order)
     {
         $data = $request->validated();
-        $order =  $this->orderServices->updateOrderDetails($order, $data);
+        $order = $this->orderServices->updateOrderDetails($order, $data);
         return OrderResource::make($order);
     }
 

@@ -3,10 +3,24 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
+use App\Services\Api\Order\OrderServices;
 use Illuminate\Http\Request;
 
 class OrderAdminController extends Controller
 {
+
+    protected OrderServices $orderServices;
+
+    public function __construct(OrderServices $orderServices)
+    {
+        $this->orderServices = $orderServices;
+    }
+
+    public function index()
+    {
+        $orders = $this->orderServices
+    }
 
     public function store(Request $request)
     {
@@ -24,8 +38,9 @@ class OrderAdminController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Order $order)
     {
-        //
+        dd($order = $this->orderServices->deleteOrder($order));
+
     }
 }
