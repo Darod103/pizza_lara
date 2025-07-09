@@ -57,6 +57,11 @@ class CartService implements CartServiceInterface
     {
         return DB::transaction(function () use ($userId, $productId, $quantity) {
             $product = Product::with('category')->findOrFail($productId);
+
+            if (!$product->is_available) {
+                throw new \InvalidArgumentException("Продукт недоступен для заказа.");
+            }
+
             $cart = Cart::with('cartItems.product')->firstOrCreate(['user_id' => $userId]);
 
             $this->checkProductLimits($cart, $product, $quantity);
@@ -88,8 +93,6 @@ class CartService implements CartServiceInterface
      * @return CartItem
      *
      * @throws \InvalidArgumentException
-     * @throws CartItemNotFoundException
-     * @throws CartLimitException
      */
     public function updateItem(int $userId, int $productId, int $quantity): CartItem
     {

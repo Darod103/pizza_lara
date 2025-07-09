@@ -4,7 +4,13 @@ namespace App\Http\Resources\Cart;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\CartItem;
+use App\Models\Product;
+use App\Models\Category;
 
+/**
+ * @mixin \App\Models\Cart
+ */
 class CartResource extends JsonResource
 {
     /**
@@ -15,22 +21,22 @@ class CartResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'items' => $this->cartItems->map(function ($item) {
+            'id' => $this->resource->id,
+            'items' => $this->resource->cartItems->map(function (CartItem $item) {
                 return [
                     'id' => $item->id,
                     'product' => [
                         'id' => $item->product->id,
                         'name' => $item->product->name,
                         'price' => $item->product->price,
-                        'category' => $item->product->category->name,
+                        'category' => $item->product->category instanceof Category ? $item->product->category->name : null,
                     ],
                     'quantity' => $item->quantity,
                     'price' => $item->price,
                     'subtotal' => $item->subtotal,
                 ];
             }),
-            'total' => $this->total,
+            'total' => $this->resource->total,
         ];
     }
 }

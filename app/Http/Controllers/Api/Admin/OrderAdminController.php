@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Order\UpdateOrderRequest;
+use App\Http\Resources\Order\OrderResource;
 use App\Models\Order;
 use App\Services\Api\Order\OrderServices;
 use Illuminate\Http\Request;
@@ -18,22 +20,22 @@ class OrderAdminController extends Controller
         $this->orderServices = $orderServices;
     }
 
-//    public function index()
-//    {
-//        $orders = $this->orderServices
-//    }
-
-    public function store(Request $request)
+    public function index()
     {
-        //
+        $orders = Order::with('items.product')->get();
+        return OrderResource::collection($orders);
     }
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateOrderRequest $request, Order $order)
     {
-        //
+        $status = $request->validated()['status'];
+        $order = $this->orderServices->updateOrder($order, $status);
+        return new OrderResource($order);
+
     }
 
     /**

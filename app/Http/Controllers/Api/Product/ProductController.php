@@ -42,6 +42,7 @@ class ProductController extends Controller
      */
     public function update(ProductUpdateRequest $request, Product $product)
     {
+
         $updatedProduct = $request->validated();
         return ProductServices::updateProduct($product, $updatedProduct);
     }

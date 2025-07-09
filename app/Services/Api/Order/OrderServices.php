@@ -2,6 +2,7 @@
 
 namespace App\Services\Api\Order;
 
+use App\DTO\OrderStatusDTO;
 use App\Exceptions\CartItemNotFoundException;
 use App\Models\Cart;
 use App\Models\Order;
@@ -79,10 +80,19 @@ class OrderServices
     public function cancelOrder(Order $order): Order
     {
         $order->update([
-            'status' => 'cancelled'
+            'status' => OrderStatusDTO::STATUS_CANCELLED,
         ]);
         return $order->refresh();
     }
+
+    public function updateOrder(Order $order, string $status): Order
+    {
+        $order->update([
+            'status' => $status,
+        ]);
+        return $order->refresh();
+    }
+
 
     /**
      * Обновляет контактную информацию и время доставки в заказе.
