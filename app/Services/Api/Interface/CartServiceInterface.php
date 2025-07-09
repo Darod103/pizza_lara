@@ -54,7 +54,7 @@ interface CartServiceInterface
      * Очистить корзину пользователя (удалить все товары).
      *
      * @param int $userId ID пользователя
-     * @return void
+     * @return bool
      */
     public function clearCart(int $userId): bool;
 }
