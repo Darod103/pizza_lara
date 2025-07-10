@@ -6,13 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ProductUpdateRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -25,7 +18,7 @@ class ProductUpdateRequest extends FormRequest
             'name' => 'sometimes|string|max:255',
             'description' => 'sometimes|nullable|string',
             'price' => 'sometimes|numeric|min:0',
-            'category' => 'sometimes|string|in:pizza,drink',
+            'category_id' => 'sometimes|string|exists:categories,id',
             'image' => 'sometimes|image|mimes:jpg,jpeg,png,webp|max:2048',
             'is_available' => 'sometimes|boolean',
         ];

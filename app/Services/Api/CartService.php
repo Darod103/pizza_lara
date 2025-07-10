@@ -9,11 +9,10 @@ use App\Exceptions\CartLimitException;
 use App\Exceptions\CartItemNotFoundException;
 use App\Services\Api\Interface\CartServiceInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Сервис для управления корзиной покупок пользователя.
- * Отвечает за получение корзины, добавление, обновление и удаление товаров,
- * а также проверку ограничений по количеству товаров в категориях.
  *
  * @package App\Services\Api
  */
@@ -21,7 +20,6 @@ class CartService implements CartServiceInterface
 {
     /**
      * Ограничения по количеству товаров в корзине для каждой категории.
-     * Ключ — название категории, значение — максимальное количество товаров.
      *
      * @var array<string,int>
      */
@@ -34,114 +32,124 @@ class CartService implements CartServiceInterface
      * Получить корзину пользователя с товарами и их продуктами.
      * Если корзина отсутствует, создаёт новую.
      *
-     * @param int $userId ID пользователя
-     * @return Cart Корзина пользователя с загруженными товарами и продуктами
+     * @param int $userId
+     * @return Cart
      */
     public function getUserCart(int $userId): Cart
     {
-        return Cart::with(['cartItems.product'])->firstOrCreate(['user_id' => $userId]);
+        $cart = Cart::firstOrCreate(['user_id' => $userId]);
+        return $cart->load('cartItems.product');
     }
 
     /**
-     * Добавить товар в корзину или увеличить количество, если товар уже есть.
-     * Проверяет ограничения по количеству товаров в категории.
+     * Добавить товар в корзину или увеличить количество.
      *
-     * @param int $userId ID пользователя
-     * @param int $productId ID добавляемого товара
-     * @param int $quantity Количество товара для добавления
-     * @return Cart Обновлённая корзина с актуальными товарами и продуктами
+     * @param int $userId
+     * @param int $productId
+     * @param int $quantity
+     * @return Cart
      *
-     * @throws ModelNotFoundException Если товар с заданным ID не найден
-     * @throws CartLimitException Если превышен лимит по категории товара
+     * @throws \InvalidArgumentException
+     * @throws ModelNotFoundException
+     * @throws CartLimitException
      */
     public function addItem(int $userId, int $productId, int $quantity): Cart
     {
-        $product = Product::findOrFail($productId);
-        $cart = Cart::firstOrCreate(['user_id' => $userId]);
-        $this->checkProductLimits($cart, $product, $quantity);
+        return DB::transaction(function () use ($userId, $productId, $quantity) {
+            $product = Product::with('category')->findOrFail($productId);
 
-        $existingItem = $cart->cartItems()->where('product_id', $productId)->first();
+            if (!$product->is_available) {
+                throw new \InvalidArgumentException("Продукт недоступен для заказа.");
+            }
 
-        if ($existingItem) {
-            $existingItem->update([
-                'quantity' => $existingItem->quantity + $quantity
-            ]);
-        } else {
-            $cart->cartItems()->create([
-                'product_id' => $productId,
-                'quantity' => $quantity,
-                'price' => $product->price,
-            ]);
-        }
+            $cart = Cart::with('cartItems.product')->firstOrCreate(['user_id' => $userId]);
 
-        return $cart->fresh(['cartItems.product']);
+            $this->checkProductLimits($cart, $product, $quantity);
+
+            $existingItem = $cart->cartItems()->where('product_id', $productId)->first();
+
+            if ($existingItem) {
+                $existingItem->update([
+                    'quantity' => $existingItem->quantity + $quantity,
+                ]);
+            } else {
+                $cart->cartItems()->create([
+                    'product_id' => $productId,
+                    'quantity' => $quantity,
+                    'price' => $product->price,
+                ]);
+            }
+
+            return $cart->fresh('cartItems.product');
+        });
     }
 
     /**
      * Обновить количество товара в корзине.
-     * Проверяет ограничения по количеству товаров в категории.
      *
-     * @param int $itemId ID элемента корзины для обновления
-     * @param int $quantity Новое количество товара
-     * @param int $userId ID пользователя для проверки прав доступа
-     * @return CartItem Обновлённый элемент корзины
+     * @param int $userId
+     * @param int $productId
+     * @param int $quantity
+     * @return CartItem
      *
-     * @throws ModelNotFoundException Если элемент корзины не найден
-     * @throws CartItemNotFoundException Если элемент не принадлежит пользователю
-     * @throws CartLimitException Если новое количество превышает лимит по категории
+     * @throws \InvalidArgumentException
      */
-    public function updateItem(int $itemId, int $quantity, int $userId): CartItem
+    public function updateItem(int $userId, int $productId, int $quantity): CartItem
     {
-        $cartItem = $this->findUserCartItemOrFail($itemId, $userId);
+        return DB::transaction(function () use ($userId, $productId, $quantity) {
+            $cartItem = $this->findUserCartItemOrFail($userId, $productId);
 
-        $this->checkProductLimits($cartItem->cart, $cartItem->product, $quantity, $cartItem);
+            $this->checkProductLimits($cartItem->cart, $cartItem->product, $quantity, $cartItem);
 
-        $cartItem->update(['quantity' => $quantity]);
+            $cartItem->update(['quantity' => $quantity]);
 
-        return $cartItem->fresh();
+            return $cartItem->fresh('product');
+        });
     }
 
     /**
      * Удалить товар из корзины.
      *
-     * @param int $itemId ID элемента корзины для удаления
-     * @param int $userId ID пользователя для проверки прав доступа
+     * @param int $productId
+     * @param int $userId
      * @return void
      *
-     * @throws CartItemNotFoundException Если элемент не найден или не принадлежит пользователю
+     * @throws CartItemNotFoundException
      */
-    public function removeItem(int $itemId, int $userId): void
+    public function removeItem(int $productId, int $userId): void
     {
-        $cartItem = $this->findUserCartItemOrFail($itemId, $userId);
+        $cartItem = $this->findUserCartItemOrFail($userId, $productId);
         $cartItem->delete();
     }
 
     /**
-     * Очистить корзину пользователя, удалив все товары.
+     * Очистить корзину пользователя.
      *
-     * @param int $userId ID пользователя
-     * @return void
+     * @param int $userId
+     * @return bool true если корзина была очищена, иначе false
      */
-    public function clearCart(int $userId): void
+    public function clearCart(int $userId): bool
     {
         $cart = Cart::where('user_id', $userId)->first();
 
         if ($cart) {
             $cart->cartItems()->delete();
+            return true;
         }
+
+        return false;
     }
 
     /**
-     * Проверить ограничения по количеству товара в корзине для заданной категории.
-     * Исключает из подсчёта переданный элемент корзины, если указан.
+     * Проверить ограничения по количеству товаров в категории.
      *
-     * @param Cart $cart Корзина пользователя
-     * @param Product $product Продукт для проверки
-     * @param int $quantity Количество товара для добавления или обновления
-     * @param CartItem|null $excludeItem Элемент корзины, который следует исключить из подсчёта (при обновлении)
+     * @param Cart $cart
+     * @param Product $product
+     * @param int $quantity
+     * @param CartItem|null $excludeItem
      * @return void
      *
-     * @throws CartLimitException Если суммарное количество товара в категории превышает лимит
+     * @throws CartLimitException
      */
     private function checkProductLimits(
         Cart $cart,
@@ -149,49 +157,47 @@ class CartService implements CartServiceInterface
         int $quantity,
         CartItem $excludeItem = null
     ): void {
-        $categoryName = $product->category->name ?? null;
+        $categoryName = $product->category?->name;
+
+        if (!$categoryName || !isset($this->categoryLimits[$categoryName])) {
+            return;
+        }
+
+        $limit = $this->categoryLimits[$categoryName];
         $categoryId = $product->category_id;
 
-        $limit = $this->categoryLimits[$categoryName] ?? null;
+        $query = $cart->cartItems()
+            ->whereHas('product', fn($q) => $q->where('category_id', $categoryId));
 
-        if ($limit !== null) {
-            $query = $cart->cartItems()
-                ->whereHas('product', function ($q) use ($categoryId) {
-                    $q->where('category_id', $categoryId);
-                });
+        if ($excludeItem) {
+            $query->where('id', '!=', $excludeItem->id);
+        }
 
-            if ($excludeItem) {
-                $query->where('id', '!=', $excludeItem->id);
-            }
+        $currentQuantity = $query->sum('quantity');
+        $totalQuantity = $currentQuantity + $quantity;
 
-            $categoryCount = $query->sum('quantity');
-            $categoryCount += $quantity;
-
-            if ($categoryCount > $limit) {
-                throw new CartLimitException("Максимум $limit {$categoryName} в корзине");
-            }
+        if ($totalQuantity > $limit) {
+            throw new CartLimitException("Максимум $limit {$categoryName} в корзине");
         }
     }
 
     /**
-     * Найти элемент корзины по ID и ID пользователя.
-     * Проверяет принадлежность элемента корзины пользователю.
+     * Найти элемент корзины по продукту и пользователю.
      *
-     * @param int $itemId ID элемента корзины
-     * @param int $userId ID пользователя для проверки принадлежности
-     * @return CartItem Найденный элемент корзины
+     * @param int $userId
+     * @param int $productId
+     * @return CartItem
      *
-     * @throws CartItemNotFoundException Если элемент не найден или не принадлежит пользователю
+     * @throws CartItemNotFoundException
      */
-    private function findUserCartItemOrFail(int $itemId, int $userId): CartItem
+    private function findUserCartItemOrFail(int $userId, int $productId): CartItem
     {
         try {
-            return CartItem::whereHas('cart', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })->findOrFail($itemId);
-        } catch (ModelNotFoundException $e) {
+            return CartItem::where('product_id', $productId)
+                ->whereHas('cart', fn($q) => $q->where('user_id', $userId))
+                ->firstOrFail();
+        } catch (ModelNotFoundException) {
             throw new CartItemNotFoundException();
         }
     }
-
 }

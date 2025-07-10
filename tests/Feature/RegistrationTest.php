@@ -16,7 +16,7 @@ class RegistrationTest extends TestCase
      */
     public function test_registration_success(): void
     {
-        //TODO Сделать тест ... Надо подумать как сделать проверку на зарегистрированного пользователя
+
         $user = User::factory()->make();
         $response = $this->post('api/register', [
             'name' => 'Test User',

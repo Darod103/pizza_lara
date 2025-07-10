@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Product;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Product\ProductStoreRequest;
 use App\Http\Requests\Api\Product\ProductUpdateRequest;
-use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\Api\ProductServices;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+
 
 class ProductController extends Controller
 {
@@ -43,6 +42,7 @@ class ProductController extends Controller
      */
     public function update(ProductUpdateRequest $request, Product $product)
     {
+
         $updatedProduct = $request->validated();
         return ProductServices::updateProduct($product, $updatedProduct);
     }

@@ -25,7 +25,7 @@ class ProductStoreRequest extends FormRequest
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'category' => 'required|string|in:pizza,drink',
+            'category_id' => 'required|string|exists:categories,id',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'is_available' => 'boolean',
         ];
