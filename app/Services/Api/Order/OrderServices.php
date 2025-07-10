@@ -2,11 +2,11 @@
 
 namespace App\Services\Api\Order;
 
-use App\DTO\OrderStatusDTO;
+
+use App\Enum\OrderStatusEnum;
 use App\Exceptions\CartItemNotFoundException;
 use App\Models\Cart;
 use App\Models\Order;
-use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -80,7 +80,7 @@ class OrderServices
     public function cancelOrder(Order $order): Order
     {
         $order->update([
-            'status' => OrderStatusDTO::STATUS_CANCELLED,
+            'status' => OrderStatusEnum::CANCELLED->value,
         ]);
         return $order->refresh();
     }
