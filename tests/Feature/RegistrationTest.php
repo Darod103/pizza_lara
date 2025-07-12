@@ -56,5 +56,26 @@ class RegistrationTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+        $response->assertInvalid('password');
     }
+
+    public function test_registration_fail_without_email(): void
+    {
+        $response = $this->postJson('api/register', [
+            'name' => 'Test User',
+            'password' => '',
+        ]);
+        $response->assertStatus(422);
+        $response->assertInvalid('email');
+    }
+
+    public function test_registration_fail_without_name(): void
+    {
+        $response = $this->postJson('api/register', [
+            'email' => 'test@test.ru',
+            'password' => '123456',
+        ]);
+        $response->assertStatus(422);
+    }
+
 }

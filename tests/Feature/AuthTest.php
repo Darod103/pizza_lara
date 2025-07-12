@@ -41,9 +41,10 @@ class AuthTest extends TestCase
             'email' => $user->email,
             'password' => '12345',
         ]);
-        $response->assertStatus(401);
+        $response->assertUnauthorized();
         $response->assertJsonStructure([
             'error'
         ]);
+
     }
 }
