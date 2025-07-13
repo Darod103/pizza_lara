@@ -24,6 +24,6 @@ class CartLimitException extends Exception
         return response()->json([
             'success' => false,
             'message' => $this->getMessage() ?: 'Превышен лимит в корзине.',
-        ]);
+        ],429);
     }
 }

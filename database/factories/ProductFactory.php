@@ -24,7 +24,7 @@ class ProductFactory extends Factory
             'description' => fake()->sentence(),
             'price' => fake()->randomFloat(2, 100, 1000),
             'category_id' => Category::inRandomOrder()->first()->id,
-            'is_available' => fake()->boolean(90)
+            'is_available' => true
         ];
     }
 
