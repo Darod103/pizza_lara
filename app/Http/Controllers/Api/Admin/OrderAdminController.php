@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Exceptions\OrderEmptyException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Order\UpdateOrderRequest;
 use App\Http\Resources\Order\OrderResource;
 use App\Models\Order;
 use App\Services\Api\Order\OrderServices;
-use Illuminate\Http\Request;
 
 
 class OrderAdminController extends Controller
@@ -23,6 +23,9 @@ class OrderAdminController extends Controller
     public function index()
     {
         $orders = Order::with('items.product')->get();
+        if ($orders->count() < 1) {
+            throw new OrderEmptyException();
+        }
         return OrderResource::collection($orders);
     }
 
@@ -35,7 +38,6 @@ class OrderAdminController extends Controller
         $status = $request->validated()['status'];
         $order = $this->orderServices->updateOrder($order, $status);
         return new OrderResource($order);
-
     }
 
     /**

@@ -24,13 +24,14 @@ class ProductFactory extends Factory
             'description' => fake()->sentence(),
             'price' => fake()->randomFloat(2, 100, 1000),
             'category_id' => Category::inRandomOrder()->first()->id,
-            'is_available' => fake()->boolean(90)
+            'is_available' => true
         ];
     }
 
     public function configure()
     {
         return $this->afterCreating(function (Product $product) {
+
             Image::factory()->count(rand(2, 3))->create([
                 'imageable_id' => $product->id,
                 'imageable_type' => Product::class,

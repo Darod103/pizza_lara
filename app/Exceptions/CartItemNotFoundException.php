@@ -16,6 +16,6 @@ class CartItemNotFoundException extends Exception
         return response()->json([
             'success' => false,
             'message' => $this->getMessage() ?: 'Нет в корзине такого продукта.',
-        ]);
+        ],422);
     }
 }

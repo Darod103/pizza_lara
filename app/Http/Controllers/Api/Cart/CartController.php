@@ -48,14 +48,17 @@ class CartController extends Controller
      * Сохранить (добавить) новый товар в корзину
      *
      * @param CartStoreRequest $request Запрос с данными товара (product_id, quantity)
-     * @return CartResource Добавленный элемент корзины
+     * @return JsonResponse Добавленный элемент корзины
      * @throws CartLimitException
      */
-    public function store(CartStoreRequest $request): CartResource
+    public function store(CartStoreRequest $request): Response
     {
         $data = $request->validated();
         $cartItem = $this->cartService->addItem(auth()->id(), $data['product_id'], $data['quantity']);
-        return CartResource::make($cartItem);
+        return response()->json(
+            CartResource::make($cartItem),
+            Response::HTTP_CREATED
+        );
     }
 
     /**
@@ -97,7 +100,9 @@ class CartController extends Controller
      */
     public function destroyAll(): JsonResponse
     {
-        $this->cartService->clearCart(auth()->id());
-        return response()->json(['message' => 'Корзина очищена']);
+        if (!$this->cartService->clearCart(auth()->id())) {
+            return response()->json(['message' => 'Такой корзины нету'], Response::HTTP_NOT_FOUND);
+        }
+        return response()->json(['message' => 'Корзина очищена'], Response::HTTP_OK);
     }
 }

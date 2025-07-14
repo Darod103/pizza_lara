@@ -29,19 +29,4 @@ class StoreOrderReguest extends FormRequest
         ];
     }
 
-    public function messages(): array
-    {
-        return [
-            'email.required' => 'Поле email обязательно для заполнения.',
-            'email.email' => 'Неверный формат email.',
-            'phone.required' => 'Поле телефон обязательно для заполнения.',
-            'phone.string' => 'Телефон должен быть строкой.',
-            'phone.min' => 'Телефон должен содержать не менее 10 символов.',
-            'phone.regex' => 'Неверный формат номера телефона. Допустимы цифры, пробелы, скобки, дефис и плюс в начале.',
-            'address.required' => 'Поле адрес обязательно для заполнения.',
-            'address.string' => 'Адрес должен быть строкой.',
-            'delivery_time.required' => 'Поле "время доставки" обязательно для заполнения.',
-            'delivery_time.date_format' => 'Время доставки должно быть в формате ЧЧ:мм.',
-        ];
-    }
 }

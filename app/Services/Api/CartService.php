@@ -2,6 +2,7 @@
 
 namespace App\Services\Api;
 
+use App\Exceptions\ProductIsNotAvailableException;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\CartItem;
@@ -49,7 +50,7 @@ class CartService implements CartServiceInterface
      * @param int $quantity
      * @return Cart
      *
-     * @throws \InvalidArgumentException
+     * @throws ProductIsNotAvailableException
      * @throws ModelNotFoundException
      * @throws CartLimitException
      */
@@ -59,7 +60,7 @@ class CartService implements CartServiceInterface
             $product = Product::with('category')->findOrFail($productId);
 
             if (!$product->is_available) {
-                throw new \InvalidArgumentException("Продукт недоступен для заказа.");
+                throw new ProductIsNotAvailableException();
             }
 
             $cart = Cart::with('cartItems.product')->firstOrCreate(['user_id' => $userId]);

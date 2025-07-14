@@ -5,8 +5,9 @@ namespace App\Exceptions;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
-class CartLimitException extends Exception
+class ProductIsNotAvailableException extends Exception
 {
     /**
      * Report the exception.
@@ -23,7 +24,7 @@ class CartLimitException extends Exception
     {
         return response()->json([
             'success' => false,
-            'message' => $this->getMessage() ?: 'Превышен лимит в корзине.',
-        ],429);
+            'message' => $this->getMessage() ?: 'Продукт недоступен для заказа.',
+        ],422);
     }
 }

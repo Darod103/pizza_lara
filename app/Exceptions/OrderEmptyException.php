@@ -6,14 +6,15 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class CartLimitException extends Exception
+
+class OrderEmptyException extends Exception
 {
     /**
      * Report the exception.
      */
     public function report(): void
     {
-        //
+
     }
 
     /**
@@ -23,7 +24,7 @@ class CartLimitException extends Exception
     {
         return response()->json([
             'success' => false,
-            'message' => $this->getMessage() ?: 'Превышен лимит в корзине.',
-        ],429);
+            'message' => $this->getMessage() ?: 'Заказов нет',
+        ],404);
     }
 }
