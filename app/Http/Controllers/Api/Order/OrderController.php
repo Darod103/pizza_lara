@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Order;
 
+use App\Exceptions\OrderEmptyException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Order\StoreOrderReguest;
 use App\Http\Resources\Order\OrderResource;
@@ -25,7 +26,12 @@ class OrderController extends Controller
      */
     public function index()
     {
-        return OrderResource::collection(auth()->user()->getUserOrders());
+        $orders = auth()->user()->getUserOrders();
+
+        if ($orders->count() < 1) {
+            throw new OrderEmptyException();
+        }
+        return OrderResource::collection($orders);
     }
 
     /**
